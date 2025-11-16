@@ -1,0 +1,56 @@
+local players = game:GetService("Players")
+local activeTexts = {}
+
+function createPlayerText(player, itemsText)
+    local text = Drawing.new("Text")
+    text.Visible = false
+    text.Color = Color3.fromRGB(255, 255, 255)
+    text.Center = true
+    text.Outline = true
+    text.Text = itemsText
+    
+    return text
+end
+
+for _, player in ipairs(players:GetChildren()) do
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        local itemsText = player.Name .. "\nItems:\n"
+        local hasItems = false
+
+        for _, item in ipairs(player.Character:GetChildren()) do
+            if item:GetAttribute("ItemType") then
+                local itemType = item:GetAttribute("ItemType")
+                if itemType == "" then
+                    itemType = "Weapon"
+                end
+                itemsText = itemsText .. "  - " .. item.Name .. " (" .. itemType .. ")\n"
+                hasItems = true
+            end
+        end
+        
+        if not hasItems then
+            itemsText = itemsText .. "  No items"
+        end
+        
+        activeTexts[player] = createPlayerText(player, itemsText)
+    end
+end
+
+while wait(0) do
+    for player, text in pairs(activeTexts) do
+        local character = player.Character
+        
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local screenPos, visible = WorldToScreen(character.HumanoidRootPart.Position)
+            
+            if visible then
+                text.Visible = true
+                text.Position = Vector2.new(screenPos.X+150, screenPos.Y)
+            else
+                text.Visible = false
+            end
+        else
+            text.Visible = false
+        end
+    end
+end
